@@ -52,8 +52,6 @@ type DockerRegistryConfig interface {
 	ValidateRegistryStorageType(registryId string, storageType string, storageActions ...string) bool
 }
 
-type ArtifactStoreType int
-
 type DockerArtifactStoreBean struct {
 	Id                      string                       `json:"id,omitempty" validate:"required"`
 	PluginId                string                       `json:"pluginId,omitempty" validate:"required"`
@@ -540,6 +538,16 @@ func (impl DockerRegistryConfigImpl) Update(bean *DockerArtifactStoreBean) (*Doc
 
 	if bean.Cert == "" {
 		bean.Cert = existingStore.Cert
+	}
+
+	existingRepositoryList := make([]string, 0)
+	for _, ociRegistryConfig := range existingStore.OCIRegistryConfig {
+		if ociRegistryConfig.RepositoryType == repository.OCI_REGISRTY_REPO_TYPE_CHART {
+			existingRepositoryList = strings.Split(ociRegistryConfig.RepositoryList, ",")
+		}
+	}
+	if len(bean.RepositoryList) == 0 {
+		bean.RepositoryList = existingRepositoryList
 	}
 
 	bean.PluginId = existingStore.PluginId
